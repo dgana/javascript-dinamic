@@ -10,10 +10,11 @@ Todo List app!
 
 ## Database
 
-* Mongodb
+* Mongoose (Mongodb)
 
 ## Guide
 ```
+npm install
 npm start
 localhost:3000
 ```

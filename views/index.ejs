@@ -7,40 +7,40 @@
   </title>
   <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
   <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+  <script src="https://code.jquery.com/jquery-1.9.1.min.js" integrity="sha256-wS9gmOZBqsqWxgIVgA8Y9WcQOa7PgSIX+rPA0VL2rbQ=" crossorigin="anonymous"></script>
   <link rel='stylesheet' href='/stylesheets/style.css' />
 </head>
 
 <body>
-  <h1><%= title %></h1>
+  <h1 style="margin-bottom:25px;"><%= title %></h1>
   <br />
 
-  <table class="table table-hover">
+  <table class="table table-striped" id="todos-table">
     <thead>
       <tr>
         <th>No</th>
         <th>Todo</th>
         <th>Completed</th>
-        <th>Created At</th>
-        <th>Updated At</th>
-        <th>action</th>
+        <th>Action</th>
       </tr>
     </thead>
     <tbody>
-      <% let i = 1 %>
-        <% todos.forEach(function(todos){ %>
-          <tr>
-            <td><%= i %></td>
-            <td><%= todos.todo %></td>
-            <td><%= todos.completed %></td>
-            <td><%= todos.created_at %></td>
-            <td><%= todos.updated_at %></td>
-            <td><a href="/"><span class="fa fa-trash fa-lg"></span></a></td>
-          </tr>
-        <% i++ %>
-      <% }); %>
     </tbody>
   </table>
+
+  <hr>
+
+  <form id="todo-form" method="post" class="form-inline">
+    <div class="form-group">
+      <label for="todo">Todo: </label>
+      <input type="text" class="form-control" name="todo" id="todo">
+    </div>
+    <button type="submit" class="btn btn-success">Add Todo</button>
+  </form>
+
   <script type="text/javascript">
+    let list = 1;
+
     $.ajax({
     method: "GET",
     url: "/api/todos",
@@ -52,14 +52,104 @@
 
     function buildTable(data){
       let html=""
-      for(let i = 0; i < data.length; i++){
-        html += `<tr>`
-        html += `<td>${data[i].id}</td>`
-        html += `<td>${data[i].title}</td>`
-        html += `<td>${data[i].completed}</td>`
+      for(let i = 0; i < data.length; i++, list++){
+        let img = '';
+        if(data[i].completed) {
+          img = '<img src="images/check.png" style="width:30px;" />'
+        } else {
+          img = '<img src="images/false.png" style="width:30px;" />'
+        }
+        html += `<tr id="${data[i]._id}">`
+        html += `<td>${list}</td>`
+        html += `<td>${data[i].todo}</td>`
+        html += `<td id="update_${data[i]._id}">${img}</td>`
+        html +=
+        `<td>
+          <span class="fa fa-trash fa-2x" onclick="delete_todo('${data[i]._id}')" style="margin-right:10px; cursor: pointer;"></span> |
+          <span class="fa fa-edit fa-2x" onclick="update_todo('${data[i]._id}')" style="margin-left:10px; cursor: pointer;"></span>
+        </td>`
         html += `</tr>`
       }
       $("#todos-table tbody").html(html)
+    }
+
+    $("#todo-form").submit(function(){
+      let todo = $("input[name=todo]").val();
+      $.ajax({
+      method: "POST",
+      url: "/api/todos/add",
+      data: {todo: todo},
+      dataType: "json"
+      })
+      .done(function(data) {
+        addTable(data)
+        $("#todo").val("");
+        if(data.completed) {
+          img = '<img src="images/check.png" style="width:30px;" />'
+        } else {
+          img = '<img src="images/false.png" style="width:30px;" />'
+        }
+        $(`#update_${data._id}`).html(img)
+      });
+      return false;
+    })
+
+    function addTable(data){
+      let html = ""
+      html += `<tr id="${data._id}">`
+      html += `<td>${list}</td>`
+      html += `<td>${data.todo}</td>`
+      html += `<td id="update_${data._id}">${data.completed}</td>`
+      html +=
+      `<td>
+        <span class="fa fa-trash fa-2x" onclick="delete_todo('${data._id}')" style="margin-right:10px; cursor: pointer;"></span> |
+        <span class="fa fa-edit fa-2x" onclick="update_todo('${data._id}')" style="margin-left:10px; cursor: pointer;"></span>
+      </td>`
+      html += `</tr>`
+      $("#todos-table tbody").append(html)
+      list++
+    }
+
+    function delete_todo(id) {
+      $.ajax({
+        type: "DELETE",
+        url: "/api/todos/delete",
+        data: {id: id},
+        dataType: "json"
+      })
+      .done(function(data) {
+        $(`#${data._id}`).html('')
+      });
+
+      return false;
+    }
+
+    function update_todo(id) {
+      let getComplete = $(`#update_${id}`).html()
+
+      if(getComplete){
+        $(`#update_${id}`).html(false)
+      } else {
+        $(`#update_${id}`).html(true)
+      }
+      console.log(getComplete);
+      $.ajax({
+        type: "PUT",
+        url: "/api/todos/update",
+        data: {id: id},
+        dataType: "json"
+      })
+      .done(function(data) {
+        console.log(data);
+        let img = '';
+        if(data.completed) {
+          img = '<img src="images/false.png" style="width:30px;" />'
+        } else {
+          img = '<img src="images/check.png" style="width:30px;" />'
+        }
+        $(`#update_${data._id}`).html(img)
+      });
+      return false;
     }
   </script>
 </body>

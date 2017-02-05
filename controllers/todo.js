@@ -29,15 +29,29 @@ module.exports = {
       if (err) throw err;
 
       // delete todo
-      res.send(`Todos: ${todo.todo} deleted!`);
+      res.json(todo)
     });
   },
+  // update: (req, res) => {
+  //   Todos.findByIdAndUpdate(req.body.id, { completed: true }, function(err, todo) {
+  //     if (err) throw err;
+  //
+  //     // we have the updated todo returned to us
+  //     res.json(todo)
+  //   });
+  // },
   update: (req, res) => {
-    Todos.findByIdAndUpdate(req.body.id, { todo: req.body.todo }, function(err, todo) {
-      if (err) throw err;
+    let bool = true;
 
+    Todos.findOne({ _id: req.body.id }, function(err, todo) {
+      if (err) throw err;
+      if(todo.completed) {
+        bool = false;
+      }
       // we have the updated todo returned to us
-      res.send(todo);
+      Todos.update({ _id: req.body.id}, {$set:{completed: bool}}, function(err, result) {
+        res.json(todo)
+      });
     });
   }
 }

@@ -1,20 +1,16 @@
 var express = require('express');
 var router = express.Router();
-var models = require('../models')
+var models = require('../models/todos')
+const controller = require('../controllers/pages')
 
 /* GET home page. */
-router.get('/', function(req, res, next) {
-  models.Todo.findAll({raw: true}).then(function(todos){
-    console.log(todos);
-    res.render('/index', { title: 'Todo List', tododata: todos});
-  })
-});
+router.get('/', controller.read)
 
-router.post('/', function(req, res, next) {
-  models.Todo.create({title: req.body.title, completed: false}).then(function(todo){
-    res.redirect("/");
-  })
-});
+// router.post('/', function(req, res, next) {
+//   models.Todo.create({title: req.body.title, completed: false}).then(function(todo){
+//     res.redirect("/");
+//   })
+// });
 
 
 

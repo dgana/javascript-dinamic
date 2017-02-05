@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>
+    <%= title %>
+  </title>
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+  <link rel='stylesheet' href='/stylesheets/style.css' />
+</head>
+
+<body>
+  <h1><%= title %></h1>
+  <br />
+
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th>No</th>
+        <th>Todo</th>
+        <th>Completed</th>
+        <th>Created At</th>
+        <th>Updated At</th>
+        <th>action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% let i = 1 %>
+        <% todos.forEach(function(todos){ %>
+          <tr>
+            <td><%= i %></td>
+            <td><%= todos.todo %></td>
+            <td><%= todos.completed %></td>
+            <td><%= todos.created_at %></td>
+            <td><%= todos.updated_at %></td>
+            <td><a href="/"><span class="fa fa-trash fa-lg"></span></a></td>
+          </tr>
+        <% i++ %>
+      <% }); %>
+    </tbody>
+  </table>
+  <script type="text/javascript">
+    $.ajax({
+    method: "GET",
+    url: "/api/todos",
+    dataType: "json"
+    })
+    .done(function(data) {
+      buildTable(data)
+    });
+
+    function buildTable(data){
+      let html=""
+      for(let i = 0; i < data.length; i++){
+        html += `<tr>`
+        html += `<td>${data[i].id}</td>`
+        html += `<td>${data[i].title}</td>`
+        html += `<td>${data[i].completed}</td>`
+        html += `</tr>`
+      }
+      $("#todos-table tbody").html(html)
+    }
+  </script>
+</body>
+
+</html>
